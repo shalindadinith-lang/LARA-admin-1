@@ -1,182 +1,472 @@
 <!DOCTYPE html>
 <html lang="si">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>LARA Cosmetics + Admin</title>
-<style>
-/* ===== Global Styles ===== */
-body{margin:0;padding:0;font-family:Segoe UI,sans-serif;background:#0a0014;color:white;}
-h1,h2,h3{margin:10px 0;}
-input,select,button,textarea{padding:8px;margin:5px;border-radius:6px;border:none;outline:none;}
-button{cursor:pointer;}
-
-/* ===== Site Styles ===== */
-header{padding:18px 6%;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.6);}
-.logo{font-size:1.8rem;font-weight:800;background:linear-gradient(90deg,#ff4fd8,#ffae00);-webkit-background-clip:text;color:transparent;}
-nav a{color:#ffd6f4;margin-right:15px;text-decoration:none;font-weight:500;}
-.cart-btn{background:#ff4fd8;color:black;padding:8px 16px;border-radius:30px;font-weight:700;}
-.hero{text-align:center;padding:50px 6%;}
-.products{padding:30px 6%;}
-.product-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;}
-.card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;transition:.3s;}
-.card img{width:100%;height:180px;object-fit:cover;border-radius:12px;}
-.card h3{color:#ffd6f4;margin:10px 0 5px;}
-.price{color:#ffae00;font-weight:700;margin-bottom:5px;}
-.btn{width:100%;padding:10px;font-weight:700;background:linear-gradient(90deg,#ff4fd8,#ffae00);color:black;}
-
-/* ===== Cart Sidebar ===== */
-.cart-sidebar{position:fixed;top:0;right:-400px;width:360px;height:100%;background:rgba(0,0,0,0.9);backdrop-filter:blur(15px);padding:15px;transition:.4s;z-index:9999;overflow-y:auto;}
-.cart-sidebar.active{right:0;}
-.cart-header{display:flex;justify-content:space-between;align-items:center;}
-.close-btn{cursor:pointer;font-size:1.6rem;color:#ff4fd8;}
-.cart-item{background:rgba(255,255,255,0.06);padding:10px;margin-bottom:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);}
-.cart-controls button{padding:5px 8px;margin-right:5px;border-radius:6px;border:none;font-weight:700;cursor:pointer;}
-.qty-btn{background:#ff4fd8;color:black;}
-.remove-btn{background:#ffae00;color:black;}
-
-/* ===== Admin Panel ===== */
-.admin-panel{padding:20px;background:#120025;}
-.admin-panel h2{color:#ff4fd8;}
-.product{border:1px solid #444;padding:10px;margin:8px 0;border-radius:8px;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>නිව්ස් ලංකා • Real-time Sinhala News</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Noto+Sans+Sinhala:wght@400;500;600;700&amp;display=swap">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Noto+Sans+Sinhala:wght@400;500;600;700&amp;display=swap');
+        
+        body {
+            font-family: 'Inter', 'Noto Sans Sinhala', system-ui, sans-serif;
+        }
+        
+        .news-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .news-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+        }
+        
+        .hero-overlay {
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.3));
+        }
+        
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .category-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .tail-container {
+            max-width: 1280px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(59, 130, 246, 0.2);
+            border-top-color: #3b82f6;
+            animation: spin 1s linear infinite;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen">
+    <!-- NAVBAR -->
+    <nav class="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-50">
+        <div class="tail-container px-6 py-5">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div onclick="loadTopHeadlines()" 
+                     class="flex items-center gap-x-3 cursor-pointer group">
+                    <div class="w-9 h-9 bg-red-600 text-white flex items-center justify-center rounded-xl font-bold text-2xl leading-none pt-0.5 group-hover:rotate-12 transition-transform">
+                        නි
+                    </div>
+                    <div>
+                        <span class="text-3xl font-bold tracking-tighter text-red-600">නිව්ස්</span>
+                        <span class="text-3xl font-bold tracking-tighter">ලංකා</span>
+                    </div>
+                </div>
 
-<!-- ===== SITE HEADER ===== -->
-<header>
-  <div class="logo">LARA Cosmetics</div>
-  <nav>
-    <a href="#products">Shop</a>
-    <button class="cart-btn" onclick="toggleCart()">🛒 Cart (<span id="cartCount">0</span>)</button>
-  </nav>
-</header>
+                <!-- Categories -->
+                <div id="category-buttons" 
+                     class="hidden md:flex items-center gap-x-2 flex-wrap justify-center">
+                    <!-- Populated by JS -->
+                </div>
 
-<section class="hero">
-  <h1>Beauty That Shines ✨</h1>
-  <p>Cosmetics Collection | Lipsticks | Skincare | Perfumes | Makeup Kits</p>
-  <input type="text" id="searchInput" placeholder="Search..." onkeyup="renderProducts()">
-  <select id="categoryFilter" onchange="renderProducts()">
-    <option value="all">All Categories</option>
-    <option value="Skincare">Skincare</option>
-    <option value="Makeup">Makeup</option>
-    <option value="Perfume">Perfume</option>
-    <option value="Accessories">Accessories</option>
-  </select>
-</section>
+                <!-- Right side -->
+                <div class="flex items-center gap-x-6">
+                    <!-- Search -->
+                    <form id="search-form" class="relative group">
+                        <input id="search-input"
+                               type="text"
+                               placeholder="පුවත් සෙවීම..."
+                               class="bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 focus:border-blue-500 rounded-2xl pl-5 pr-12 py-3 w-72 focus:w-80 transition-all outline-none text-sm">
+                        <button type="submit"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-blue-600 transition-colors">
+                            🔎
+                        </button>
+                    </form>
 
-<section class="products" id="products">
-  <h2>Our Products 💄</h2>
-  <div class="product-grid" id="productGrid"></div>
-</section>
+                    <!-- Dark mode toggle -->
+                    <button onclick="toggleDarkMode()" 
+                            id="dark-toggle"
+                            class="w-11 h-11 flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-2xl transition-colors text-xl">
+                        🌙
+                    </button>
+                </div>
+            </div>
 
-<!-- ===== CART ===== -->
-<div class="cart-sidebar" id="cartSidebar">
-  <div class="cart-header">
-    <h2>Your Cart 🛍️</h2>
-    <span class="close-btn" onclick="toggleCart()">✖</span>
-  </div>
-  <div class="cart-items" id="cartItems"></div>
-  <div class="checkout">
-    <h3>Checkout</h3>
-    <input type="text" id="customerName" placeholder="Name">
-    <input type="text" id="customerPhone" placeholder="Phone">
-    <textarea id="customerAddress" placeholder="Delivery Address"></textarea>
-    <button class="btn" onclick="placeOrder()">📩 Place Order</button>
-    <p id="orderMessage" style="font-size:0.9rem;"></p>
-  </div>
-</div>
+            <!-- Mobile categories -->
+            <div id="mobile-categories" 
+                 class="md:hidden flex gap-x-3 overflow-x-auto py-4 scrollbar-hide">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </nav>
 
-<!-- ===== ADMIN PANEL ===== -->
-<section class="admin-panel">
-<h2>Admin Panel</h2>
-<input id="name" placeholder="Name">
-<input id="price" type="number" placeholder="Price">
-<select id="category">
-  <option>Skincare</option>
-  <option>Makeup</option>
-  <option>Perfume</option>
-  <option>Accessories</option>
-</select>
-<input id="image" placeholder="Image URL">
-<button onclick="addProduct()">Add Product</button>
+    <div class="tail-container px-6 py-8">
+        <!-- FEATURED HERO -->
+        <div id="featured" class="mb-16">
+            <!-- JS injected -->
+        </div>
 
-<h3>Products in DB</h3>
-<div id="productList"></div>
-</section>
+        <!-- SECTION TITLE -->
+        <div class="flex items-baseline justify-between mb-8">
+            <h1 id="section-title" 
+                class="text-4xl font-bold tracking-tighter text-zinc-900 dark:text-white">
+                මුල් පුවත්
+            </h1>
+            <div id="result-count" class="text-sm text-zinc-500 dark:text-zinc-400 font-medium">
+                <!-- JS updated -->
+            </div>
+        </div>
 
-<!-- ===== Firebase & EmailJS ===== -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+        <!-- LOADING -->
+        <div id="loading" class="hidden flex flex-col items-center justify-center py-20">
+            <div class="spinner w-12 h-12 rounded-full mx-auto"></div>
+            <p class="mt-6 text-zinc-500 dark:text-zinc-400 text-sm tracking-widest">පූරණය වෙමින්...</p>
+        </div>
 
-// Firebase Config
-const firebaseConfig = {
-  apiKey: "AIzaSyCnOm40y1WK7JikSsa3WpYqBBzIisiLO0k",
-  authDomain: "lara-da9ee.firebaseapp.com",
-  projectId: "lara-da9ee",
-  storageBucket: "lara-da9ee.firebasestorage.app",
-  messagingSenderId: "882720302118",
-  appId: "1:882720302118:web:434c43568665680f5632e7",
-  measurementId: "G-M5XSW33HSD"
-};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+        <!-- ERROR -->
+        <div id="error-message" 
+             class="hidden bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-3xl p-8 text-center my-8">
+            <p id="error-text" class="font-medium"></p>
+            <button onclick="retryLastFetch()" 
+                    class="mt-6 px-8 py-3 bg-red-600 text-white rounded-2xl text-sm font-medium hover:bg-red-700 transition">
+                නැවත උත්සාහ කරන්න
+            </button>
+        </div>
 
-// ===== Admin Functions =====
-async function addProduct(){
-  const name = document.getElementById("name").value.trim();
-  const price = Number(document.getElementById("price").value);
-  const category = document.getElementById("category").value;
-  const image = document.getElementById("image").value.trim();
-  if(!name||!price||!image){alert("Fill all fields!"); return;}
-  await addDoc(collection(db,"products"),{name,price,category,image});
-  document.getElementById("name").value=""; document.getElementById("price").value=""; document.getElementById("image").value="";
-  showProductsFromFirebase(); loadProducts();
-}
+        <!-- NEWS GRID -->
+        <div id="news-grid" 
+             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <!-- JS cards injected -->
+        </div>
+    </div>
 
-async function showProductsFromFirebase(){
-  const list = document.getElementById("productList");
-  list.innerHTML="";
-  const snapshot = await getDocs(collection(db,"products"));
-  snapshot.forEach(docSnap=>{
-    const p=docSnap.data();
-    const div=document.createElement("div");
-    div.className="product";
-    div.innerHTML=`<strong>${p.name}</strong> - Rs.${p.price}<br>Category:${p.category}<br><img src="${p.image}" width="120"/><br><button onclick="deleteProduct('${docSnap.id}')">Delete</button>`;
-    list.appendChild(div);
-  });
-}
+    <!-- FOOTER -->
+    <footer class="bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 mt-20">
+        <div class="tail-container px-6 py-12 text-center text-xs text-zinc-500 dark:text-zinc-400">
+            <p>නිව්ස් ලංකා — Powered by NewsAPI.org • Real-time updates from Sri Lanka</p>
+            <p class="mt-2">© 2026 • This is a demo website. Replace API key to make it live.</p>
+        </div>
+    </footer>
 
-async function deleteProduct(id){
-  if(confirm("Remove this product?")){await deleteDoc(doc(db,"products",id)); showProductsFromFirebase(); loadProducts();}
-}
+    <script>
+        // ================== CONFIG ==================
+        const API_KEY = 'YOUR_API_KEY_HERE'; // ←←← REPLACE WITH YOUR NEWSAPI.ORG KEY
+        
+        if (API_KEY === 'a04b66cfd06d4de6894d3d7b17c4d299') {
+            console.warn('%c⚠️ Please replace YOUR_API_KEY_HERE with your actual NewsAPI key from https://newsapi.org', 'color: red; font-weight: bold');
+        }
 
-// ===== Site Functions =====
-let products=[], cart=JSON.parse(localStorage.getItem("cart"))||[];
-async function loadProducts(){
-  const snapshot = await getDocs(collection(db,"products"));
-  products=[]; snapshot.forEach(docSnap=>products.push({...docSnap.data(),id:docSnap.id}));
-  renderProducts(); renderCart(); updateCartCount();
-}
-function renderProducts(){
-  const grid = document.getElementById("productGrid");
-  const search = document.getElementById("searchInput").value.toLowerCase();
-  const category = document.getElementById("categoryFilter").value;
-  grid.innerHTML="";
-  const filtered = products.filter(p=>p.name.toLowerCase().includes(search) && (category==="all"?true:p.category===category));
-  if(filtered.length===0){grid.innerHTML="<p style='text-align:center;'>No products 😢</p>"; return;}
-  filtered.forEach(p=>{grid.innerHTML+=`<div class="card"><img src="${p.image}"><h3>${p.name}</h3><p>Category: ${p.category}</p><div class="price">Rs.${p.price}</div><button class="btn" onclick="addToCart('${p.id}')">➕ Add to Cart</button></div>`;});
-}
-function addToCart(id){const item=cart.find(c=>c.id===id);if(item)item.qty+=1;else cart.push({id,qty:1});saveCart();renderCart();updateCartCount();}
-function removeFromCart(id){cart=cart.filter(c=>c.id!==id);saveCart();renderCart();updateCartCount();}
-function changeQty(id,amt){const item=cart.find(c=>c.id===id);if(!item)return;item.qty+=amt;if(item.qty<=0)removeFromCart(id);saveCart();renderCart();updateCartCount();}
-function saveCart(){localStorage.setItem("cart",JSON.stringify(cart));}
-function updateCartCount(){document.getElementById("cartCount").innerText=cart.reduce((sum,c)=>sum+c.qty,0);}
-function toggleCart(){document.getElementById("cartSidebar").classList.toggle("active"); renderCart();}
-function renderCart(){const box=document.getElementById("cartItems");let total=0;box.innerHTML=""; if(cart.length===0){box.innerHTML="<p>Cart empty 🛒</p>"; return;}cart.forEach(item=>{const p=products.find(pr=>pr.id===item.id);const sub=p.price*item.qty; total+=sub; box.innerHTML+=`<div class="cart-item"><h4>${p.name}</h4><p>Rs.${p.price} × ${item.qty} = Rs.${sub}</p><div class="cart-controls"><button class="qty-btn" onclick="changeQty('${item.id}',-1)">➖</button><button class="qty-btn" onclick="changeQty('${item.id}',1)">➕</button><button class="remove-btn" onclick="removeFromCart('${item.id}')">🗑 Remove</button></div></div>`;});}
-function placeOrder(){if(cart.length===0){alert("Cart empty!"); return;} alert("Order Placed!"); cart=[]; saveCart(); renderCart(); updateCartCount();}
-showProductsFromFirebase(); loadProducts();
-</script>
+        const BASE_URL = 'https://newsapi.org/v2';
+        
+        // Categories with proper endpoints (country=lk for Sri Lankan focus)
+        const categories = [
+            { id: 'top', name: 'මුල් පුවත්', endpoint: () => `${BASE_URL}/top-headlines?country=lk&pageSize=12&apiKey=${API_KEY}` },
+            { id: 'politics', name: 'දේශපාලනය', endpoint: () => `${BASE_URL}/top-headlines?country=lk&q=politics&pageSize=12&apiKey=${API_KEY}` },
+            { id: 'sports', name: 'ක්‍රීඩා', endpoint: () => `${BASE_URL}/top-headlines?country=lk&category=sports&pageSize=12&apiKey=${API_KEY}` },
+            { id: 'business', name: 'ව්‍යාපාර', endpoint: () => `${BASE_URL}/top-headlines?country=lk&category=business&pageSize=12&apiKey=${API_KEY}` },
+            { id: 'international', name: 'ජාත්‍යන්තර', endpoint: () => `${BASE_URL}/top-headlines?country=lk&q=international&pageSize=12&apiKey=${API_KEY}` },
+            { id: 'technology', name: 'තාක්ෂණය', endpoint: () => `${BASE_URL}/top-headlines?country=lk&category=technology&pageSize=12&apiKey=${API_KEY}` }
+        ];
+
+        let currentActiveId = 'top';
+        let lastFetchUrl = '';
+
+        // ================== TAILWIND INIT ==================
+        function initTailwind() {
+            // Already configured via CDN + class dark
+        }
+
+        // ================== DARK MODE ==================
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+            
+            const toggleBtn = document.getElementById('dark-toggle');
+            toggleBtn.innerHTML = isDark ? '☀️' : '🌙';
+        }
+
+        function loadDarkModePreference() {
+            const saved = localStorage.getItem('darkMode');
+            if (saved === 'enabled' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('dark-toggle').innerHTML = '☀️';
+            }
+        }
+
+        // ================== FETCH NEWS ==================
+        async function fetchNews(url) {
+            lastFetchUrl = url;
+            const loadingEl = document.getElementById('loading');
+            const errorEl = document.getElementById('error-message');
+            const gridEl = document.getElementById('news-grid');
+            
+            loadingEl.classList.remove('hidden');
+            errorEl.classList.add('hidden');
+            gridEl.innerHTML = '';
+
+            try {
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.status !== 'ok') {
+                    throw new Error(data.message || 'API returned error');
+                }
+                
+                renderArticles(data.articles);
+                
+            } catch (err) {
+                console.error(err);
+                showError(err.message.includes('API key') ? 
+                    'API යතුර වලංගු නොවේ. නිවැරදි යතුර ඇතුළත් කරන්න.' : 
+                    'පුවත් ලබා ගැනීමට නොහැකි විය. නැවත උත්සාහ කරන්න.');
+            } finally {
+                loadingEl.classList.add('hidden');
+            }
+        }
+
+        function retryLastFetch() {
+            if (lastFetchUrl) fetchNews(lastFetchUrl);
+        }
+
+        function showError(msg) {
+            const errorEl = document.getElementById('error-message');
+            document.getElementById('error-text').innerHTML = msg;
+            errorEl.classList.remove('hidden');
+        }
+
+        // ================== RENDER ARTICLES ==================
+        function renderArticles(articles) {
+            const featuredEl = document.getElementById('featured');
+            const gridEl = document.getElementById('news-grid');
+            const countEl = document.getElementById('result-count');
+            
+            featuredEl.innerHTML = '';
+            gridEl.innerHTML = '';
+            
+            countEl.textContent = `${articles.length} පුවත්`;
+
+            if (articles.length === 0) {
+                gridEl.innerHTML = `
+                    <div class="col-span-full py-20 text-center">
+                        <p class="text-xl text-zinc-400">කිසිදු පුවතක් හමු නොවීය</p>
+                    </div>`;
+                return;
+            }
+
+            // Featured Hero (first article)
+            if (articles.length > 0) {
+                const hero = articles[0];
+                featuredEl.innerHTML = `
+                    <div onclick="window.open('${hero.url}', '_blank')" 
+                         class="relative rounded-3xl overflow-hidden cursor-pointer shadow-2xl group">
+                        <img src="${hero.urlToImage || 'https://picsum.photos/id/1015/1200/630'}" 
+                             class="w-full h-[420px] md:h-[520px] object-cover transition-transform group-hover:scale-105 duration-700"
+                             alt="${hero.title}">
+                        <div class="hero-overlay absolute inset-0"></div>
+                        
+                        <div class="absolute bottom-0 left-0 right-0 p-8 md:p-12 text-white">
+                            <div class="flex items-center gap-x-3 mb-4">
+                                <span class="bg-red-600 text-white text-xs font-bold px-4 py-1.5 rounded-3xl">${hero.source.name}</span>
+                            </div>
+                            <h1 class="text-4xl md:text-5xl font-bold leading-tight tracking-tighter line-clamp-3 mb-4">
+                                ${hero.title}
+                            </h1>
+                            <p class="max-w-2xl text-lg opacity-90 line-clamp-2 mb-6">
+                                ${hero.description || 'වැඩි විස්තර සඳහා ක්ලික් කරන්න'}
+                            </p>
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm opacity-75">
+                                    ${formatDate(hero.publishedAt)}
+                                </div>
+                                <div class="bg-white text-black text-sm font-medium px-8 py-3 rounded-3xl flex items-center gap-x-2 hover:bg-amber-300 transition">
+                                    කියවන්න 
+                                    <span class="text-lg">→</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+            }
+
+            // Rest of the articles as cards
+            const remainingArticles = articles.slice(1);
+            
+            remainingArticles.forEach(article => {
+                const cardHTML = `
+                <div onclick="window.open('${article.url}', '_blank')" 
+                     class="news-card bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-lg cursor-pointer border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700">
+                    
+                    <div class="relative">
+                        <img src="${article.urlToImage || 'https://picsum.photos/id/201/600/400'}" 
+                             class="w-full h-56 object-cover"
+                             alt="${article.title}">
+                        <div class="absolute top-4 right-4 bg-white/90 dark:bg-zinc-900/90 text-[10px] font-bold px-3 py-1 rounded-2xl shadow">
+                            ${article.source.name}
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <h3 class="font-semibold text-xl leading-tight line-clamp-3 mb-3 text-zinc-900 dark:text-white">
+                            ${article.title}
+                        </h3>
+                        
+                        <p class="text-zinc-600 dark:text-zinc-400 text-sm line-clamp-3 mb-6">
+                            ${article.description || 'වැඩි විස්තර සඳහා මූලාශ්‍රය වෙත යන්න'}
+                        </p>
+                        
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-zinc-500 dark:text-zinc-400">
+                                ${formatDate(article.publishedAt)}
+                            </span>
+                            <span class="text-blue-600 dark:text-blue-400 font-medium flex items-center gap-x-1">
+                                කියවන්න 
+                                <span class="text-base">↗</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>`;
+                
+                gridEl.innerHTML += cardHTML;
+            });
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('si-LK', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            }) + " " + date.toLocaleTimeString('si-LK', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // ================== CATEGORY BUTTONS ==================
+        function renderCategoryButtons() {
+            const desktopContainer = document.getElementById('category-buttons');
+            const mobileContainer = document.getElementById('mobile-categories');
+            
+            let desktopHTML = '';
+            let mobileHTML = '';
+            
+            categories.forEach(cat => {
+                const btnHTML = `
+                    <button onclick="loadCategory('${cat.id}')" 
+                            id="cat-btn-${cat.id}"
+                            class="category-btn px-6 py-3 text-sm font-medium whitespace-nowrap rounded-3xl transition-all
+                                   hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                        ${cat.name}
+                    </button>`;
+                
+                desktopHTML += btnHTML;
+                mobileHTML += btnHTML.replace('text-sm', 'text-xs px-5 py-2');
+            });
+            
+            desktopContainer.innerHTML = desktopHTML;
+            mobileContainer.innerHTML = mobileHTML;
+        }
+
+        function updateActiveButton() {
+            categories.forEach(cat => {
+                const btn = document.getElementById(`cat-btn-${cat.id}`);
+                if (!btn) return;
+                
+                if (cat.id === currentActiveId) {
+                    btn.classList.add('!bg-red-600', '!text-white', 'shadow-inner');
+                } else {
+                    btn.classList.remove('!bg-red-600', '!text-white', 'shadow-inner');
+                }
+            });
+        }
+
+        function loadCategory(id) {
+            currentActiveId = id;
+            updateActiveButton();
+            
+            // Update title
+            const cat = categories.find(c => c.id === id);
+            document.getElementById('section-title').textContent = cat.name;
+            
+            const endpoint = cat.endpoint();
+            fetchNews(endpoint);
+        }
+
+        function loadTopHeadlines() {
+            currentActiveId = 'top';
+            updateActiveButton();
+            document.getElementById('section-title').textContent = 'මුල් පුවත්';
+            document.getElementById('search-input').value = '';
+            fetchNews(categories[0].endpoint());
+        }
+
+        // ================== SEARCH ==================
+        function setupSearch() {
+            const form = document.getElementById('search-form');
+            const input = document.getElementById('search-input');
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const keyword = input.value.trim();
+                
+                if (!keyword) return;
+                
+                // Deselect all categories
+                currentActiveId = null;
+                updateActiveButton();
+                
+                document.getElementById('section-title').innerHTML = `
+                    "${keyword}" සඳහා ප්‍රතිඵල
+                `;
+                
+                const searchUrl = `${BASE_URL}/top-headlines?country=lk&q=${encodeURIComponent(keyword)}&pageSize=12&apiKey=${API_KEY}`;
+                fetchNews(searchUrl);
+            });
+        }
+
+        // ================== MAIN INIT ==================
+        function initialize() {
+            // Tailwind ready
+            initTailwind();
+            
+            // Load dark mode
+            loadDarkModePreference();
+            
+            // Render category buttons
+            renderCategoryButtons();
+            
+            // Set initial active button
+            updateActiveButton();
+            
+            // Setup search
+            setupSearch();
+            
+            // Load initial top headlines
+            fetchNews(categories[0].endpoint());
+            
+            // Keyboard shortcut hint
+            console.log('%c✅ නිව්ස් ලංකා website ready! Press ESC to clear search.', 'color: #22c55e; font-size: 13px');
+        }
+
+        // ESC key to clear search
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('search-input').value = '';
+                loadTopHeadlines();
+            }
+        });
+
+        // Auto start
+        window.onload = initialize;
+    </script>
 </body>
 </html>
