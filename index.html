@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>නිව්ස් ලංකා • Real-time Sinhala News</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Noto+Sans+Sinhala:wght@400;500;600;700&amp;display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+Sinhala:wght@400;500;600;700&display=swap">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Noto+Sans+Sinhala:wght@400;500;600;700&amp;display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+Sinhala:wght@400;500;600;700&display=swap');
         
         body {
             font-family: 'Inter', 'Noto Sans Sinhala', system-ui, sans-serif;
@@ -147,47 +147,39 @@
     <!-- FOOTER -->
     <footer class="bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 mt-20">
         <div class="tail-container px-6 py-12 text-center text-xs text-zinc-500 dark:text-zinc-400">
-            <p>නිව්ස් ලංකා — Powered by NewsAPI.org • Real-time updates from Sri Lanka</p>
-            <p class="mt-2">© 2026 • This is a demo website. Replace API key to make it live.</p>
+            <p>නිව්ස් ලංකා — Powered by NewsData.io • Real-time Sinhala updates from Sri Lanka</p>
+            <p class="mt-2">© 2026 • Demo website. Free plan limited to 10 articles/request.</p>
         </div>
     </footer>
 
     <script>
         // ================== CONFIG ==================
-        const API_KEY = 'pub_ea73adee3a9c446b8cb01c719d82a446'; // ←←← REPLACE WITH YOUR NEWSAPI.ORG KEY
-        
-        if (API_KEY === '') {
-            console.warn('%c⚠️ Please replace YOUR_API_KEY_HERE with your actual NewsAPI key from https://newsapi.org', 'color: red; font-weight: bold');
+        const API_KEY = 'pub_ea73adee3a9c446b8cb01c719d82a446';
+
+        if (!API_KEY) {
+            console.warn('%c⚠️ API key එක නැහැ! NewsData.io dashboard එකෙන් බලන්න.', 'color: red; font-weight: bold');
         }
 
-        const BASE_URL = 'https://newsdata.io/api/1/latest?';
-        
-        // Categories with proper endpoints (country=lk for Sri Lankan focus)
+        const BASE_URL = 'https://newsdata.io/api/1/latest';
+
         const categories = [
-            { id: 'top', name: 'මුල් පුවත්', endpoint: () => `${BASE_URL}/top-headlines?country=lk&pageSize=12&apiKey=${API_KEY}` },
-            { id: 'politics', name: 'දේශපාලනය', endpoint: () => `${BASE_URL}/top-headlines?country=lk&q=politics&pageSize=12&apiKey=${API_KEY}` },
-            { id: 'sports', name: 'ක්‍රීඩා', endpoint: () => `${BASE_URL}/top-headlines?country=lk&category=sports&pageSize=12&apiKey=${API_KEY}` },
-            { id: 'business', name: 'ව්‍යාපාර', endpoint: () => `${BASE_URL}/top-headlines?country=lk&category=business&pageSize=12&apiKey=${API_KEY}` },
-            { id: 'international', name: 'ජාත්‍යන්තර', endpoint: () => `${BASE_URL}/top-headlines?country=lk&q=international&pageSize=12&apiKey=${API_KEY}` },
-            { id: 'technology', name: 'තාක්ෂණය', endpoint: () => `${BASE_URL}/top-headlines?country=lk&category=technology&pageSize=12&apiKey=${API_KEY}` }
+            { id: 'top', name: 'මුල් පුවත්', endpoint: () => `${BASE_URL}?apikey=${API_KEY}&country=lk&size=10` },
+            { id: 'politics', name: 'දේශපාලනය', endpoint: () => `${BASE_URL}?apikey=${API_KEY}&country=lk&category=politics&size=10` },
+            { id: 'sports', name: 'ක්‍රීඩා', endpoint: () => `${BASE_URL}?apikey=${API_KEY}&country=lk&category=sports&size=10` },
+            { id: 'business', name: 'ව්‍යාපාර', endpoint: () => `${BASE_URL}?apikey=${API_KEY}&country=lk&category=business&size=10` },
+            { id: 'international', name: 'ජාත්‍යන්තර', endpoint: () => `${BASE_URL}?apikey=${API_KEY}&country=lk&language=si&q=international&size=10` },
+            { id: 'technology', name: 'තාක්ෂණය', endpoint: () => `${BASE_URL}?apikey=${API_KEY}&country=lk&category=technology&size=10` }
         ];
 
         let currentActiveId = 'top';
         let lastFetchUrl = '';
-
-        // ================== TAILWIND INIT ==================
-        function initTailwind() {
-            // Already configured via CDN + class dark
-        }
 
         // ================== DARK MODE ==================
         function toggleDarkMode() {
             document.documentElement.classList.toggle('dark');
             const isDark = document.documentElement.classList.contains('dark');
             localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
-            
-            const toggleBtn = document.getElementById('dark-toggle');
-            toggleBtn.innerHTML = isDark ? '☀️' : '🌙';
+            document.getElementById('dark-toggle').innerHTML = isDark ? '☀️' : '🌙';
         }
 
         function loadDarkModePreference() {
@@ -218,17 +210,18 @@
                 
                 const data = await response.json();
                 
-                if (data.status !== 'ok') {
-                    throw new Error(data.message || 'API returned error');
+                if (data.status !== 'success') {
+                    throw new Error(data.message || 'API error');
                 }
                 
-                renderArticles(data.articles);
+                renderArticles(data.results || []);
                 
             } catch (err) {
                 console.error(err);
-                showError(err.message.includes('API key') ? 
-                    'API යතුර වලංගු නොවේ. නිවැරදි යතුර ඇතුළත් කරන්න.' : 
-                    'පුවත් ලබා ගැනීමට නොහැකි විය. නැවත උත්සාහ කරන්න.');
+                let msg = 'පුවත් ලබා ගැනීමට නොහැකි විය. නැවත උත්සාහ කරන්න.';
+                if (err.message.includes('apikey')) msg = 'API යතුර වැරදියි.';
+                if (err.message.includes('credits') || err.message.includes('limit')) msg = 'දවසේ requests limit ඉක්මවා ගොස් තිබෙනවා.';
+                showError(msg);
             } finally {
                 loadingEl.classList.add('hidden');
             }
@@ -240,7 +233,7 @@
 
         function showError(msg) {
             const errorEl = document.getElementById('error-message');
-            document.getElementById('error-text').innerHTML = msg;
+            document.getElementById('error-text').textContent = msg;
             errorEl.classList.remove('hidden');
         }
 
@@ -256,27 +249,23 @@
             countEl.textContent = `${articles.length} පුවත්`;
 
             if (articles.length === 0) {
-                gridEl.innerHTML = `
-                    <div class="col-span-full py-20 text-center">
-                        <p class="text-xl text-zinc-400">කිසිදු පුවතක් හමු නොවීය</p>
-                    </div>`;
+                gridEl.innerHTML = `<div class="col-span-full py-20 text-center"><p class="text-xl text-zinc-400">කිසිදු පුවතක් හමු නොවීය</p></div>`;
                 return;
             }
 
-            // Featured Hero (first article)
+            // Hero
             if (articles.length > 0) {
                 const hero = articles[0];
                 featuredEl.innerHTML = `
-                    <div onclick="window.open('${hero.url}', '_blank')" 
+                    <div onclick="window.open('${hero.link}', '_blank')" 
                          class="relative rounded-3xl overflow-hidden cursor-pointer shadow-2xl group">
-                        <img src="${hero.urlToImage || 'https://picsum.photos/id/1015/1200/630'}" 
+                        <img src="${hero.image_url || 'https://picsum.photos/id/1015/1200/630'}" 
                              class="w-full h-[420px] md:h-[520px] object-cover transition-transform group-hover:scale-105 duration-700"
                              alt="${hero.title}">
                         <div class="hero-overlay absolute inset-0"></div>
-                        
                         <div class="absolute bottom-0 left-0 right-0 p-8 md:p-12 text-white">
                             <div class="flex items-center gap-x-3 mb-4">
-                                <span class="bg-red-600 text-white text-xs font-bold px-4 py-1.5 rounded-3xl">${hero.source.name}</span>
+                                <span class="bg-red-600 text-white text-xs font-bold px-4 py-1.5 rounded-3xl">${hero.source_name || hero.source_id || 'Unknown'}</span>
                             </div>
                             <h1 class="text-4xl md:text-5xl font-bold leading-tight tracking-tighter line-clamp-3 mb-4">
                                 ${hero.title}
@@ -285,106 +274,82 @@
                                 ${hero.description || 'වැඩි විස්තර සඳහා ක්ලික් කරන්න'}
                             </p>
                             <div class="flex items-center justify-between">
-                                <div class="text-sm opacity-75">
-                                    ${formatDate(hero.publishedAt)}
-                                </div>
+                                <div class="text-sm opacity-75">${formatDate(hero.pubDate)}</div>
                                 <div class="bg-white text-black text-sm font-medium px-8 py-3 rounded-3xl flex items-center gap-x-2 hover:bg-amber-300 transition">
-                                    කියවන්න 
-                                    <span class="text-lg">→</span>
+                                    කියවන්න <span class="text-lg">→</span>
                                 </div>
                             </div>
                         </div>
                     </div>`;
             }
 
-            // Rest of the articles as cards
-            const remainingArticles = articles.slice(1);
-            
-            remainingArticles.forEach(article => {
-                const cardHTML = `
-                <div onclick="window.open('${article.url}', '_blank')" 
+            // Cards
+            articles.slice(1).forEach(article => {
+                gridEl.innerHTML += `
+                <div onclick="window.open('${article.link}', '_blank')" 
                      class="news-card bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-lg cursor-pointer border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700">
-                    
                     <div class="relative">
-                        <img src="${article.urlToImage || 'https://picsum.photos/id/201/600/400'}" 
+                        <img src="${article.image_url || 'https://picsum.photos/id/201/600/400'}" 
                              class="w-full h-56 object-cover"
                              alt="${article.title}">
                         <div class="absolute top-4 right-4 bg-white/90 dark:bg-zinc-900/90 text-[10px] font-bold px-3 py-1 rounded-2xl shadow">
-                            ${article.source.name}
+                            ${article.source_name || article.source_id || 'Unknown'}
                         </div>
                     </div>
-                    
                     <div class="p-6">
                         <h3 class="font-semibold text-xl leading-tight line-clamp-3 mb-3 text-zinc-900 dark:text-white">
                             ${article.title}
                         </h3>
-                        
                         <p class="text-zinc-600 dark:text-zinc-400 text-sm line-clamp-3 mb-6">
                             ${article.description || 'වැඩි විස්තර සඳහා මූලාශ්‍රය වෙත යන්න'}
                         </p>
-                        
                         <div class="flex justify-between items-center text-xs">
-                            <span class="text-zinc-500 dark:text-zinc-400">
-                                ${formatDate(article.publishedAt)}
-                            </span>
+                            <span class="text-zinc-500 dark:text-zinc-400">${formatDate(article.pubDate)}</span>
                             <span class="text-blue-600 dark:text-blue-400 font-medium flex items-center gap-x-1">
-                                කියවන්න 
-                                <span class="text-base">↗</span>
+                                කියවන්න <span class="text-base">↗</span>
                             </span>
                         </div>
                     </div>
                 </div>`;
-                
-                gridEl.innerHTML += cardHTML;
             });
         }
 
         function formatDate(dateStr) {
+            if (!dateStr) return 'නොදන්නා දිනය';
             const date = new Date(dateStr);
-            return date.toLocaleDateString('si-LK', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            }) + " " + date.toLocaleTimeString('si-LK', {
-                hour: '2-digit',
-                minute: '2-digit'
+            if (isNaN(date.getTime())) return dateStr;
+            return date.toLocaleString('si-LK', {
+                year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', hour12: false
             });
         }
 
         // ================== CATEGORY BUTTONS ==================
         function renderCategoryButtons() {
-            const desktopContainer = document.getElementById('category-buttons');
-            const mobileContainer = document.getElementById('mobile-categories');
-            
-            let desktopHTML = '';
-            let mobileHTML = '';
-            
+            const desktop = document.getElementById('category-buttons');
+            const mobile = document.getElementById('mobile-categories');
+            let html = '';
             categories.forEach(cat => {
-                const btnHTML = `
+                html += `
                     <button onclick="loadCategory('${cat.id}')" 
                             id="cat-btn-${cat.id}"
-                            class="category-btn px-6 py-3 text-sm font-medium whitespace-nowrap rounded-3xl transition-all
-                                   hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                            class="category-btn px-6 py-3 text-sm font-medium whitespace-nowrap rounded-3xl transition-all hover:bg-zinc-100 dark:hover:bg-zinc-800">
                         ${cat.name}
                     </button>`;
-                
-                desktopHTML += btnHTML;
-                mobileHTML += btnHTML.replace('text-sm', 'text-xs px-5 py-2');
             });
-            
-            desktopContainer.innerHTML = desktopHTML;
-            mobileContainer.innerHTML = mobileHTML;
+            desktop.innerHTML = html;
+            mobile.innerHTML = html.replace(/text-sm/g, 'text-xs px-5 py-2');
         }
 
         function updateActiveButton() {
             categories.forEach(cat => {
                 const btn = document.getElementById(`cat-btn-${cat.id}`);
-                if (!btn) return;
-                
-                if (cat.id === currentActiveId) {
-                    btn.classList.add('!bg-red-600', '!text-white', 'shadow-inner');
-                } else {
-                    btn.classList.remove('!bg-red-600', '!text-white', 'shadow-inner');
+                if (btn) {
+                    if (cat.id === currentActiveId) {
+                        btn.classList.add('!bg-red-600', '!text-white', 'shadow-inner');
+                    } else {
+                        btn.classList.remove('!bg-red-600', '!text-white', 'shadow-inner');
+                    }
                 }
             });
         }
@@ -392,13 +357,9 @@
         function loadCategory(id) {
             currentActiveId = id;
             updateActiveButton();
-            
-            // Update title
             const cat = categories.find(c => c.id === id);
             document.getElementById('section-title').textContent = cat.name;
-            
-            const endpoint = cat.endpoint();
-            fetchNews(endpoint);
+            fetchNews(cat.endpoint());
         }
 
         function loadTopHeadlines() {
@@ -411,61 +372,35 @@
 
         // ================== SEARCH ==================
         function setupSearch() {
-            const form = document.getElementById('search-form');
-            const input = document.getElementById('search-input');
-            
-            form.addEventListener('submit', function(e) {
+            document.getElementById('search-form').addEventListener('submit', e => {
                 e.preventDefault();
-                const keyword = input.value.trim();
-                
+                const keyword = document.getElementById('search-input').value.trim();
                 if (!keyword) return;
-                
-                // Deselect all categories
                 currentActiveId = null;
                 updateActiveButton();
-                
-                document.getElementById('section-title').innerHTML = `
-                    "${keyword}" සඳහා ප්‍රතිඵල
-                `;
-                
-                const searchUrl = `${BASE_URL}/top-headlines?country=lk&q=${encodeURIComponent(keyword)}&pageSize=12&apiKey=${API_KEY}`;
-                fetchNews(searchUrl);
+                document.getElementById('section-title').innerHTML = `"${keyword}" සඳහා ප්‍රතිඵල`;
+                const url = `${BASE_URL}?apikey=${API_KEY}&country=lk&language=si&q=${encodeURIComponent(keyword)}&size=10`;
+                fetchNews(url);
             });
         }
 
-        // ================== MAIN INIT ==================
+        // ================== INIT ==================
         function initialize() {
-            // Tailwind ready
-            initTailwind();
-            
-            // Load dark mode
             loadDarkModePreference();
-            
-            // Render category buttons
             renderCategoryButtons();
-            
-            // Set initial active button
             updateActiveButton();
-            
-            // Setup search
             setupSearch();
-            
-            // Load initial top headlines
-            fetchNews(categories[0].endpoint());
-            
-            // Keyboard shortcut hint
-            console.log('%c✅ නිව්ස් ලංකා website ready! Press ESC to clear search.', 'color: #22c55e; font-size: 13px');
+            loadTopHeadlines();
+            console.log('%c✅ නිව්ස් ලංකා ready! ESC to clear search.', 'color: #22c55e; font-size: 13px');
         }
 
-        // ESC key to clear search
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
                 document.getElementById('search-input').value = '';
                 loadTopHeadlines();
             }
         });
 
-        // Auto start
         window.onload = initialize;
     </script>
 </body>
